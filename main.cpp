@@ -1,13 +1,101 @@
+#include <windows.h>
 #include <iostream>
 #include <stdlib.h>
 #include "GL/glew.h"
 #include "GL/glut.h"
+#include <math.h>
 
 using namespace std;
 
-GLfloat pos_x = 10, pos_z = 10; //Position in z-axis of the sphere.
+GLfloat pos_x = 10, pos_z = 10, pos_y = 50; //Position in x and z-axis of the sphere.
 
 GLint winWidth = 500, winHeight = 500; // Initial display-window size.
+
+GLUquadric *texture; //Used for binding a texture to the sphere.
+GLuint sphereTexture; //Used for binding a texture to the sphere.
+
+//Function for loading the bitmap of the image to create the texture.
+int LoadBitmap(const char *filename)
+{
+	FILE * file;
+	char temp;
+	long i;
+
+	BITMAPINFOHEADER infoheader;
+	unsigned char *infoheader_data;
+
+	GLuint num_texture;
+
+	if ((file = fopen(filename, "rb")) == NULL) return (-1); // Open the file for reading
+
+	fseek(file, 18, SEEK_CUR);  /* start reading width & height */
+	fread(&infoheader.biWidth, sizeof(int), 1, file);
+
+	fread(&infoheader.biHeight, sizeof(int), 1, file);
+
+	fread(&infoheader.biPlanes, sizeof(short int), 1, file);
+	if (infoheader.biPlanes != 1) {
+		printf("Planes from %s is not 1: %u\n", filename, infoheader.biPlanes);
+		return 0;
+	}
+
+	// read the bpp
+	fread(&infoheader.biBitCount, sizeof(unsigned short int), 1, file);
+	if (infoheader.biBitCount != 24) {
+		printf("Bpp from %s is not 24: %d\n", filename, infoheader.biBitCount);
+		return 0;
+	}
+
+	fseek(file, 24, SEEK_CUR);
+
+	// read the data
+	if (infoheader.biWidth < 0) {
+		infoheader.biWidth = -infoheader.biWidth;
+	}
+	if (infoheader.biHeight < 0) {
+		infoheader.biHeight = -infoheader.biHeight;
+	}
+	infoheader_data = (unsigned char *)malloc(infoheader.biWidth * infoheader.biHeight * 3);
+	if (infoheader_data == NULL) {
+		printf("Error allocating memory for color-corrected image data\n");
+		return 0;
+	}
+
+	if ((i = fread(infoheader_data, infoheader.biWidth * infoheader.biHeight * 3, 1, file)) != 1) {
+		printf("Error reading image data from %s.\n", filename);
+		return 0;
+	}
+
+	for (i = 0; i < (infoheader.biWidth * infoheader.biHeight * 3); i += 3) { // reverse all of the colors. (bgr -> rgb)
+		temp = infoheader_data[i];
+		infoheader_data[i] = infoheader_data[i + 2];
+		infoheader_data[i + 2] = temp;
+	}
+
+
+	fclose(file); // Closes the file stream
+
+	glGenTextures(1, &num_texture);
+	glBindTexture(GL_TEXTURE_2D, num_texture); // Bind the ID texture specified by the 2nd parameter
+
+	// The next commands sets the texture parameters
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // If the u,v coordinates overflow the range 0,1 the image is repeated
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // The magnification function ("linear" produces better results)
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST); //The minifying function
+
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+	// Finally we define the 2d texture
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, infoheader.biWidth, infoheader.biHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, infoheader_data);
+
+	// And create 2d mipmaps for the minifying function
+	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, infoheader.biWidth, infoheader.biHeight, GL_RGB, GL_UNSIGNED_BYTE, infoheader_data);
+
+	free(infoheader_data); // Free the memory we used to load the texture
+
+	return (num_texture); // Returns the current texture OpenGL ID
+}
 
 void init(void)
 {
@@ -15,11 +103,11 @@ void init(void)
 	GLfloat xref = 50.0, yref = 50.0, zref = 0.0; // Look-at point.
 	GLfloat Vx = 0.0, Vy = 1.0, Vz = 0.0; // View-up vector.
 
-	/* Set coordinate limits for the clipping window: */
+	//Set coordinate limits for the clipping window
 	GLfloat xwMin = -100.0, ywMin = -80.0, xwMax = 100.0, ywMax = 80.0;
 
-	/* Set positions for near and far clipping planes: */
-	GLfloat dnear = 25.0, dfar = 125.0;
+	//Set positions for near and far clipping planes
+	GLfloat dnear = 25.0, dfar = 150.0;
 
 	glClearColor(.741, .624, .239, 0.0); //Set backgroud color to "gold"
 
@@ -28,8 +116,14 @@ void init(void)
 
 	glMatrixMode(GL_PROJECTION);
 	glFrustum(xwMin, xwMax, ywMin, ywMax, dnear, dfar);
+
+	//glEnable(GL_DEPTH_TEST); //Used for the sphere.
+	texture = gluNewQuadric(); //Used for the sphere.
+	gluQuadricTexture(texture, GL_TRUE); //Used for the sphere.
+	sphereTexture = LoadBitmap("images/pattern.bmp"); //Used for the sphere.
 }
 
+//Method for drawing a row of hexagons in the background.
 void hexagonLine(GLfloat xi, GLfloat yi, GLfloat zi) {
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -99,16 +193,46 @@ void hexagonLine(GLfloat xi, GLfloat yi, GLfloat zi) {
 	}
 }
 
+//Method to draw the sphere.
 void sphere(void) {
 	//glMatrixMode(GL_PROJECTION);
 	//gluOrtho2D(0.0, 500, 0.0, 500);
-	GLfloat pos_y = 50;
-	glTranslatef(pos_x,pos_y,pos_z);
-	glColor3f(.2, .3, .4); //Set color of the sphere
-	glutSolidSphere(50, 100, 100);
-	glTranslatef(-pos_x, -pos_y, -pos_z);
+	//GLfloat pos_y = 50;
+
+	/*------------------Trying binding texture to a sphere---------------*/	
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, sphereTexture);
+
+	//glMatrixMode(GL_MODELVIEW);
+	//glLoadIdentity();
+	////rotate/translate entire scene with a,A,s,S,D,D and h,l,j,k,u,U keys
+	//glRotatef(anglez, 0.0, 0.0, 1.0);
+	//glRotatef(angley, 0.0, 1.0, 0.0);
+	//glRotatef(anglex, 1.0, 0.0, 0.0);
+
+	//draw textured sphere
+	glPushMatrix();
+	//glTranslatef(locX, locY, locZ);
+	glTranslatef(pos_x, pos_y, pos_z);
+	//glScalef(0.5, 0.5, 0.5);
+	gluSphere(texture, 60, 36, 72);
+	glTranslatef(pos_x, pos_y, pos_z);
+	glPopMatrix();
+
+	glDisable(GL_TEXTURE_2D);
+
+	//glutSwapBuffers();
+	/*---------------------------------------------------------------------*/
+
+	//glTranslatef(pos_x,pos_y,pos_z);
+	//glColor3f(.2, .3, .4); //Set color of the sphere
+	//glutSolidSphere(50, 100, 100);
+	//glTranslatef(-pos_x, -pos_y, -pos_z);
 }
 
+//Main drawing method.
 void draw(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -132,6 +256,7 @@ void draw(void)
 	glutPostRedisplay();
 }
 
+//Method for managing window reshape.
 void reshapeFcn(GLint newWidth, GLint newHeight)
 {
 	glViewport(0, 0, newWidth, newHeight);
@@ -140,29 +265,32 @@ void reshapeFcn(GLint newWidth, GLint newHeight)
 	winHeight = newHeight;
 }
 
+//Method to control the sphere using the keyboard.
 void specialkeys(int key, int x, int y) {
 	switch (key) {
 	case GLUT_KEY_UP:
-		pos_z = pos_z + .5;
+		pos_y = pos_y + .5;
 		cout << y << endl;
-		glutPostRedisplay();
 		break;
 	case GLUT_KEY_DOWN:
-		pos_z = pos_z - .5;
+		pos_y = pos_y - .5;
 		cout << y << endl;
-		glutPostRedisplay();
 		break;
 	case GLUT_KEY_RIGHT:
 		pos_x = pos_x + .5;
 		cout << x << endl;
-		glutPostRedisplay();
 		break;
 	case GLUT_KEY_LEFT:
 		pos_x = pos_x - .5;
 		cout << x << endl;
-		glutPostRedisplay();
 		break;
+	case GLUT_KEY_F1:
+		pos_z += .5;
+		break;
+	case GLUT_KEY_F2:
+		pos_z = pos_z - .5;
 	}
+	glutPostRedisplay();
 }
 
 int main(int argc, char** argv)

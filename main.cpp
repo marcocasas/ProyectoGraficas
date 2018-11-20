@@ -99,6 +99,13 @@ int LoadBitmap(const char *filename)
 
 void init(void)
 {
+	//////////////FOR THE LIGHTING
+	glEnable(GL_LIGHTING); //Enable lighting
+	glEnable(GL_LIGHT0); //Enable light #0
+	glEnable(GL_LIGHT1); //Enable light #1
+	glEnable(GL_NORMALIZE); //Automatically normalize normals
+	/////////////
+
 	GLfloat x0 = 50, y0 = 50, z0 = 50; // Viewing-coordinate origin.
 	GLfloat xref = 50.0, yref = 50.0, zref = 0.0; // Look-at point.
 	GLfloat Vx = 0.0, Vy = 1.0, Vz = 0.0; // View-up vector.
@@ -122,16 +129,13 @@ void init(void)
 	gluQuadricTexture(texture, GL_TRUE); //Used for the sphere.
 	sphereTexture = LoadBitmap("images/pattern.bmp"); //Used for the sphere.
 
-	//////////////FOR THE LIGHTING
-	glEnable(GL_LIGHTING); //Enable lighting
-	glEnable(GL_LIGHT0); //Enable light #0
-	glEnable(GL_LIGHT1); //Enable light #1
-	glEnable(GL_NORMALIZE); //Automatically normalize normals
-	/////////////
 }
 
 //Method for drawing a row of hexagons in the background.
 void hexagonLine(GLfloat xi, GLfloat yi, GLfloat zi) {
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	glEnable(GL_COLOR_MATERIAL);
+
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	for (int i = 0; i < 12; i++) {
@@ -202,17 +206,12 @@ void hexagonLine(GLfloat xi, GLfloat yi, GLfloat zi) {
 //Method to draw the sphere.
 void sphere(void) {
 	glColor3f(1, 1, 1);
-	//glMatrixMode(GL_PROJECTION);
-	//gluOrtho2D(0.0, 500, 0.0, 500);
-	//GLfloat pos_y = 50;
 
 	/*------------------Trying to bind texture to the sphere---------------*/	
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, sphereTexture);
 
-	//glMatrixMode(GL_MODELVIEW);
-	//glLoadIdentity();
 	////rotate/translate entire scene with a,A,s,S,D,D and h,l,j,k,u,U keys
 	//glRotatef(anglez, 0.0, 0.0, 1.0);
 	//glRotatef(angley, 0.0, 1.0, 0.0);
@@ -220,9 +219,7 @@ void sphere(void) {
 
 	//draw textured sphere
 	glPushMatrix();
-	//glTranslatef(locX, locY, locZ);
 	glTranslatef(pos_x, pos_y, pos_z);
-	//glScalef(0.5, 0.5, 0.5);
 	gluSphere(texture, 60, 36, 72);
 	glTranslatef(pos_x, pos_y, pos_z);
 	glPopMatrix();
@@ -232,10 +229,6 @@ void sphere(void) {
 	//glutSwapBuffers();
 	/*---------------------------------------------------------------------*/
 
-	//glTranslatef(pos_x,pos_y,pos_z);
-	//glColor3f(.2, .3, .4); //Set color of the sphere
-	//glutSolidSphere(50, 100, 100);
-	//glTranslatef(-pos_x, -pos_y, -pos_z);
 }
 
 //Main drawing method.
@@ -262,14 +255,15 @@ void draw(void)
 	glTranslatef(0.0f, 0.0f, -8.0f);
 
 	//Add ambient light
-	GLfloat ambientColor[] = { 0.9, 0.9, 0.9, 0.0 }; //Color (0.2, 0.2, 0.2)
+	GLfloat ambientColor[] = { 0.6, 0.6, 0.6, 1.0 }; //Color (0.2, 0.2, 0.2)
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
+	//glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 
 	//Add positioned light
 	GLfloat diffuseLightColor0[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	GLfloat specularLightColor0[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-	GLfloat lightPos0[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	GLfloat lightPos0[] = { 1.0f, 10.0f, 5.0f, 1.0f };
 
 	//glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLightColor0);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, specularLightColor0);

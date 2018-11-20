@@ -87,7 +87,7 @@ int LoadBitmap(const char *filename)
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 	// Finally we define the 2d texture
-	glTexImage2D(GL_TEXTURE_2D, 0, 3, infoheader.biWidth, infoheader.biHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, infoheader_data);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, infoheader.biWidth, infoheader.biHeight, 0, GL_BGR, GL_UNSIGNED_BYTE, infoheader_data);
 
 	// And create 2d mipmaps for the minifying function
 	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, infoheader.biWidth, infoheader.biHeight, GL_RGB, GL_UNSIGNED_BYTE, infoheader_data);
@@ -107,7 +107,7 @@ void init(void)
 	GLfloat xwMin = -100.0, ywMin = -80.0, xwMax = 100.0, ywMax = 80.0;
 
 	//Set positions for near and far clipping planes
-	GLfloat dnear = 25.0, dfar = 150.0;
+	GLfloat dnear = 25.0, dfar = 250.0;
 
 	glClearColor(.741, .624, .239, 0.0); //Set backgroud color to "gold"
 
@@ -121,6 +121,13 @@ void init(void)
 	texture = gluNewQuadric(); //Used for the sphere.
 	gluQuadricTexture(texture, GL_TRUE); //Used for the sphere.
 	sphereTexture = LoadBitmap("images/pattern.bmp"); //Used for the sphere.
+
+	//////////////FOR THE LIGHTING
+	glEnable(GL_LIGHTING); //Enable lighting
+	glEnable(GL_LIGHT0); //Enable light #0
+	glEnable(GL_LIGHT1); //Enable light #1
+	glEnable(GL_NORMALIZE); //Automatically normalize normals
+	/////////////
 }
 
 //Method for drawing a row of hexagons in the background.
@@ -189,19 +196,18 @@ void hexagonLine(GLfloat xi, GLfloat yi, GLfloat zi) {
 				glVertex3f(xi - 13 - 40 * i, yi - 10, zi + 1);
 			glEnd();
 		}
-
 	}
 }
 
 //Method to draw the sphere.
 void sphere(void) {
+	glColor3f(1, 1, 1);
 	//glMatrixMode(GL_PROJECTION);
 	//gluOrtho2D(0.0, 500, 0.0, 500);
 	//GLfloat pos_y = 50;
 
-	/*------------------Trying binding texture to a sphere---------------*/	
+	/*------------------Trying to bind texture to the sphere---------------*/	
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, sphereTexture);
 
@@ -252,6 +258,33 @@ void draw(void)
 
 	sphere(); //Drawing the sphere.
 
+	/////////////////////////////////LIGHTING
+	glTranslatef(0.0f, 0.0f, -8.0f);
+
+	//Add ambient light
+	GLfloat ambientColor[] = { 0.9, 0.9, 0.9, 0.0 }; //Color (0.2, 0.2, 0.2)
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
+
+	//Add positioned light
+	GLfloat diffuseLightColor0[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	GLfloat specularLightColor0[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	GLfloat lightPos0[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	//glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLightColor0);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, specularLightColor0);
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPos0);
+
+	//Add directed light
+	GLfloat lightColor1[] = { 0.9f, 0.9f, 0.9f, 1.0f }; //Color (0.5, 0.2, 0.2)
+	//Coming from the direction (-1, 0.5, 0.5)
+	GLfloat lightPos1[] = { -1.0f, 0.5f, -0.2f, 0.0f };
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor1);
+	glLightfv(GL_LIGHT1, GL_POSITION, lightPos1);
+
+	glTranslatef(0.0f, 0.0f, 8.0f);
+	/////////////////////////////////
+
 	glFlush();
 	glutPostRedisplay();
 }
@@ -268,27 +301,39 @@ void reshapeFcn(GLint newWidth, GLint newHeight)
 //Method to control the sphere using the keyboard.
 void specialkeys(int key, int x, int y) {
 	switch (key) {
-	case GLUT_KEY_UP:
-		pos_y = pos_y + .5;
-		cout << y << endl;
-		break;
-	case GLUT_KEY_DOWN:
-		pos_y = pos_y - .5;
-		cout << y << endl;
-		break;
-	case GLUT_KEY_RIGHT:
-		pos_x = pos_x + .5;
-		cout << x << endl;
-		break;
-	case GLUT_KEY_LEFT:
-		pos_x = pos_x - .5;
-		cout << x << endl;
-		break;
-	case GLUT_KEY_F1:
-		pos_z += .5;
-		break;
-	case GLUT_KEY_F2:
-		pos_z = pos_z - .5;
+		case GLUT_KEY_UP:
+			pos_y = pos_y + .5;
+			cout << y << endl;
+			break;
+		case GLUT_KEY_DOWN:
+			pos_y = pos_y - .5;
+			cout << y << endl;
+			break;
+		case GLUT_KEY_RIGHT:
+			pos_x = pos_x + .5;
+			cout << x << endl;
+			break;
+		case GLUT_KEY_LEFT:
+			pos_x = pos_x - .5;
+			cout << x << endl;
+			break;
+		case GLUT_KEY_F1:
+			pos_z += .5;
+			break;
+		case GLUT_KEY_F2:
+			pos_z = pos_z - .5;
+		case GLUT_KEY_F3:
+			glDisable(GL_LIGHT0);
+			break;
+		case GLUT_KEY_F4:
+			glEnable(GL_LIGHT0);
+			break;
+		case GLUT_KEY_F5:
+			glDisable(GL_LIGHT1);
+			break;
+		case GLUT_KEY_F6:
+			glEnable(GL_LIGHT1);
+			break;
 	}
 	glutPostRedisplay();
 }

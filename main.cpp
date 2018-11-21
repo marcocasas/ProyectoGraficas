@@ -7,7 +7,10 @@
 
 using namespace std;
 
-GLfloat pos_x = 10, pos_z = 10, pos_y = 50; //Position in x and z-axis of the sphere.
+GLfloat pos_x = 10, pos_z = 10, pos_y = 50; //Position in x, y and z-axis of the sphere.
+GLfloat anglex = 1;
+GLfloat angley = -1;
+GLfloat anglez = 0;
 
 GLint winWidth = 500, winHeight = 500; // Initial display-window size.
 
@@ -99,12 +102,12 @@ int LoadBitmap(const char *filename)
 
 void init(void)
 {
-	//////////////FOR THE LIGHTING
+	/*-----------------FOR THE LIGHTING--------------------------*/
 	glEnable(GL_LIGHTING); //Enable lighting
 	glEnable(GL_LIGHT0); //Enable light #0
 	glEnable(GL_LIGHT1); //Enable light #1
 	glEnable(GL_NORMALIZE); //Automatically normalize normals
-	/////////////
+	/*-----------------------------------------------------------*/
 
 	GLfloat x0 = 50, y0 = 50, z0 = 50; // Viewing-coordinate origin.
 	GLfloat xref = 50.0, yref = 50.0, zref = 0.0; // Look-at point.
@@ -122,9 +125,8 @@ void init(void)
 	gluLookAt(x0, y0, z0, xref, yref, zref, Vx, Vy, Vz);
 
 	glMatrixMode(GL_PROJECTION);
-	glFrustum(xwMin, xwMax, ywMin, ywMax, dnear, dfar);
+	glFrustum(xwMin, xwMax, ywMin, ywMax, dnear, dfar); //Working with a frustrum visualization volume.
 
-	//glEnable(GL_DEPTH_TEST); //Used for the sphere.
 	texture = gluNewQuadric(); //Used for the sphere.
 	gluQuadricTexture(texture, GL_TRUE); //Used for the sphere.
 	sphereTexture = LoadBitmap("images/pattern.bmp"); //Used for the sphere.
@@ -133,8 +135,8 @@ void init(void)
 
 //Method for drawing a row of hexagons in the background.
 void hexagonLine(GLfloat xi, GLfloat yi, GLfloat zi) {
-	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-	glEnable(GL_COLOR_MATERIAL);
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE); //Used for enabling color of polygons after applying lighting effects.
+	glEnable(GL_COLOR_MATERIAL); //Used for enabling color of polygons after applying lighting effects.
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -207,18 +209,17 @@ void hexagonLine(GLfloat xi, GLfloat yi, GLfloat zi) {
 void sphere(void) {
 	glColor3f(1, 1, 1);
 
-	/*------------------Trying to bind texture to the sphere---------------*/	
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	/*------------------Binding texture to the sphere---------------*/	
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, sphereTexture);
 
-	////rotate/translate entire scene with a,A,s,S,D,D and h,l,j,k,u,U keys
-	//glRotatef(anglez, 0.0, 0.0, 1.0);
-	//glRotatef(angley, 0.0, 1.0, 0.0);
-	//glRotatef(anglex, 1.0, 0.0, 0.0);
-
-	//draw textured sphere
+	//Next lines will draw the textured sphere
 	glPushMatrix();
+
+	glRotatef(anglez, 0.0, 0.0, 1.0);
+	glRotatef(angley, pos_x, pos_y, pos_z);
+	glRotatef(anglex, 1.0, 1, 0);
+
 	glTranslatef(pos_x, pos_y, pos_z);
 	gluSphere(texture, 60, 36, 72);
 	glTranslatef(pos_x, pos_y, pos_z);
@@ -226,10 +227,21 @@ void sphere(void) {
 
 	glDisable(GL_TEXTURE_2D);
 
-	//glutSwapBuffers();
 	/*---------------------------------------------------------------------*/
 
 }
+
+//Displaying menu options as text.
+void print(int x, int y, int z, const char *string)
+{
+	glRasterPos2f(x, y); //Set position of text.
+	int len = (int)strlen(string);
+
+	for (int i = 0; i < len; i++)
+	{
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, string[i]); //Displaying character by character.
+	}
+};
 
 //Main drawing method.
 void draw(void)
@@ -239,7 +251,7 @@ void draw(void)
 	GLfloat xi = 250, zi = 0;
 	int m = 1;
 
-	//Drawing background pattern.
+	/*--------------------Drawing background pattern manually-----------------------------*/
 	for (GLfloat yi = -100; yi <= 700; yi = yi + 30) {
 		if (m == 1)
 			hexagonLine(xi, yi, zi);
@@ -248,10 +260,11 @@ void draw(void)
 
 		m = m * -1;
 	}
+	/*------------------------------------------------------------------------------------*/
 
 	sphere(); //Drawing the sphere.
 
-	/////////////////////////////////LIGHTING
+	/*-----------------------Lighting----------------------------------------------*/
 	glTranslatef(0.0f, 0.0f, -8.0f);
 
 	//Add ambient light
@@ -265,7 +278,6 @@ void draw(void)
 
 	GLfloat lightPos0[] = { 1.0f, 10.0f, 5.0f, 1.0f };
 
-	//glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLightColor0);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, specularLightColor0);
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPos0);
 
@@ -277,7 +289,22 @@ void draw(void)
 	glLightfv(GL_LIGHT1, GL_POSITION, lightPos1);
 
 	glTranslatef(0.0f, 0.0f, 8.0f);
-	/////////////////////////////////
+	/*---------------------------------------------------------------------------*/
+	
+	/*---------------------Generate label with menu-------------------------*/
+	glColor3f(0, 0, 0);
+	glBegin(GL_POLYGON);
+		glVertex3f(40, -40, 12);
+		glVertex3f(195, -40, 12);
+		glVertex3f(195, -70, 12);
+		glVertex3f(40, -70, 12);
+	glEnd();
+	glColor3f(1, 1, 1);
+	print(45, -80, 10, "Usa las flechas para mover la esfera.");
+	print(45, -90, 10, "F1-F2 para girar la esfera.");
+	print(45, -100, 10, "F3-F4-F5-F6 para modificar iluminacion.");
+	/*----------------------------------------------------------------------*/
+
 
 	glFlush();
 	glutPostRedisplay();
@@ -328,6 +355,15 @@ void specialkeys(int key, int x, int y) {
 		case GLUT_KEY_F6:
 			glEnable(GL_LIGHT1);
 			break;
+		case GLUT_KEY_F7:
+			anglex += 5;
+			break;
+		case GLUT_KEY_F8:
+			angley += 5;
+			break;
+		case GLUT_KEY_F9:
+			anglez += 5;
+			break;
 	}
 	glutPostRedisplay();
 }
@@ -338,7 +374,7 @@ int main(int argc, char** argv)
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
 	glutInitWindowPosition(50, 50);
 	glutInitWindowSize(winWidth, winHeight);
-	glutCreateWindow("Proyecto");
+	glutCreateWindow("Proyecto Final");
 
 	init();
 	glutDisplayFunc(draw);

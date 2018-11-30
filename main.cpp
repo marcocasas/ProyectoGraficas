@@ -7,15 +7,17 @@
 
 using namespace std;
 
-GLfloat pos_x = 10, pos_z = 10, pos_y = 50; //Position in x, y and z-axis of the sphere.
-GLfloat anglex = 1;
-GLfloat angley = -1;
+GLfloat pos_x = -20, pos_z = 30, pos_y = 10; //Position in x, y and z-axis of the sphere.
+GLfloat anglex = 0;
+GLfloat angley = 0;
 GLfloat anglez = 0;
 
 GLint winWidth = 500, winHeight = 500; // Initial display-window size.
 
 GLUquadric *texture; //Used for binding a texture to the sphere.
 GLuint sphereTexture; //Used for binding a texture to the sphere.
+
+GLdouble sphereRadius = 40;
 
 //Function for loading the bitmap of the image to create the texture.
 int LoadBitmap(const char *filename)
@@ -109,15 +111,15 @@ void init(void)
 	glEnable(GL_NORMALIZE); //Automatically normalize normals
 	/*-----------------------------------------------------------*/
 
-	GLfloat x0 = 50, y0 = 50, z0 = 50; // Viewing-coordinate origin.
-	GLfloat xref = 50.0, yref = 50.0, zref = 0.0; // Look-at point.
+	GLfloat x0 = 0, y0 = 0, z0 = 240; // Viewing-coordinate origin.
+	GLfloat xref = 0.0, yref = 0.0, zref = -10.0; // Look-at point.
 	GLfloat Vx = 0.0, Vy = 1.0, Vz = 0.0; // View-up vector.
 
 	//Set coordinate limits for the clipping window
 	GLfloat xwMin = -100.0, ywMin = -80.0, xwMax = 100.0, ywMax = 80.0;
 
 	//Set positions for near and far clipping planes
-	GLfloat dnear = 25.0, dfar = 250.0;
+	GLfloat dnear = 0.0, dfar = 250.0;
 
 	glClearColor(.741, .624, .239, 0.0); //Set backgroud color to "gold"
 
@@ -125,7 +127,8 @@ void init(void)
 	gluLookAt(x0, y0, z0, xref, yref, zref, Vx, Vy, Vz);
 
 	glMatrixMode(GL_PROJECTION);
-	glFrustum(xwMin, xwMax, ywMin, ywMax, dnear, dfar); //Working with a frustrum visualization volume.
+	//glFrustum(xwMin, xwMax, ywMin, ywMax, dnear, dfar); //Working with a frustrum visualization volume.
+	glOrtho(xwMin, xwMax, ywMin, ywMax, dnear, dfar);
 
 	texture = gluNewQuadric(); //Used for the sphere.
 	gluQuadricTexture(texture, GL_TRUE); //Used for the sphere.
@@ -140,66 +143,68 @@ void hexagonLine(GLfloat xi, GLfloat yi, GLfloat zi) {
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+	int rec40 = 35;
+	int rec15 = 10;
+
 	for (int i = 0; i < 12; i++) {
 		if (i < 6) {
-
 			//White contour
 			glColor3f(1, 1, 1);
 			glBegin(GL_POLYGON);
-				glVertex3f(xi - 40 * i, yi + 2, zi);
-				glVertex3f(xi + 2 + 13 - 40 * i, yi + 2 - 10, zi + 1);
-				glVertex3f(xi + 2 + 13 - 40 * i, yi - 2 - 20 , zi + 1);
-				glVertex3f(xi - 40 * i, yi - 2 - 30, zi);
+				glVertex3f(xi - rec40 * i, yi + 1, zi);
+				glVertex3f(xi + rec15 - rec40 * i, yi + 1 - 4, zi + 1);
+				glVertex3f(xi + rec15 - rec40 * i, yi - 1 - 10 , zi + 1);
+				glVertex3f(xi - rec40 * i, yi - 1 - 14, zi);
 			glEnd();
 			
 			//Black contour
 			glColor3f(0, 0, 0);
 			glBegin(GL_POLYGON);
-				glVertex3f(xi - 40 * i, yi - 2 - 30, zi);
-				glVertex3f(xi - 2 - 13 - 40 * i, yi - 2 - 20, zi - 1);
-				glVertex3f(xi - 2 - 13 - 40 * i, yi + 2 - 10, zi - 1);
-				glVertex3f(xi - 40 * i, yi + 2, zi);
+				glVertex3f(xi - rec40 * i, yi - 1 - 14, zi);
+				glVertex3f(xi - rec15 - rec40 * i, yi - 1 - 10, zi - 1);
+				glVertex3f(xi - rec15 - rec40 * i, yi + 1 - 4, zi - 1);
+				glVertex3f(xi - rec40 * i, yi + 1, zi);
 			glEnd();
 
 			//Hexagon "center"
 			glColor3f(.443, .133, .522); // Set fill color to "purple".
 			glBegin(GL_POLYGON);
-				glVertex3f(xi - 40 * i, yi, zi);
-				glVertex3f(xi + 13 - 40 * i, yi - 10, zi + 1);
-				glVertex3f(xi + 13 - 40 * i, yi - 20, zi + 1);
-				glVertex3f(xi - 40 * i, yi - 30, zi);
-				glVertex3f(xi - 13 - 40 * i, yi - 20, zi - 1);
-				glVertex3f(xi - 13 - 40 * i, yi - 10, zi - 1);
+				glVertex3f(xi - rec40 * i, yi, zi);
+				glVertex3f(xi + rec15 - 2 - rec40 * i, yi - 4, zi + 1);
+				glVertex3f(xi + rec15 - 2 - rec40 * i, yi - 10, zi + 1);
+				glVertex3f(xi - rec40 * i, yi - 14, zi);
+				glVertex3f(xi - (rec15 - 2) - rec40 * i, yi - 10, zi - 1);
+				glVertex3f(xi - (rec15 - 2) - rec40 * i, yi - 4, zi - 1);
 			glEnd();
 		}
 		else {
 			//White contour
 			glColor3f(1, 1, 1);
 				glBegin(GL_POLYGON);
-				glVertex3f(xi - 40 * i, yi + 2, zi);
-				glVertex3f(xi + 2 + 13 - 40 * i, yi + 2 - 10, zi - 1);
-				glVertex3f(xi + 2 + 13 - 40 * i, yi - 2 - 20, zi - 1);
-				glVertex3f(xi - 40 * i, yi - 2 - 30, zi);
+				glVertex3f(xi - rec40 * i, yi + 1, zi);
+				glVertex3f(xi + rec15 - rec40 * i, yi + 1 - 4, zi - 1);
+				glVertex3f(xi + rec15 - rec40 * i, yi - 1 - 10, zi - 1);
+				glVertex3f(xi - rec40 * i, yi - 1 - 14, zi);
 			glEnd();
 
 			//Black contour
 			glColor3f(0, 0, 0);
 				glBegin(GL_POLYGON);
-				glVertex3f(xi - 40 * i, yi - 2 - 30, zi);
-				glVertex3f(xi - 2 - 13 - 40 * i, yi - 2 - 20, zi + 1);
-				glVertex3f(xi - 2 - 13 - 40 * i, yi + 2 - 10, zi + 1);
-				glVertex3f(xi - 40 * i, yi + 2, zi);
+				glVertex3f(xi - rec40 * i, yi - 2 - 14, zi);
+				glVertex3f(xi - rec15 - rec40 * i, yi - 1 - 10, zi + 1);
+				glVertex3f(xi - rec15 - rec40 * i, yi + 1 - 4, zi + 1);
+				glVertex3f(xi - rec40 * i, yi + 1, zi);
 			glEnd();
 
 			//Hexagon "center"
 			glColor3f(.443, .133, .522); // Set fill color to "purple".
 			glBegin(GL_POLYGON);
-				glVertex3f(xi - 40 * i, yi, zi);
-				glVertex3f(xi + 13 - 40 * i, yi - 10, zi - 1);
-				glVertex3f(xi + 13 - 40 * i, yi - 20, zi - 1);
-				glVertex3f(xi - 40 * i, yi - 30, zi);
-				glVertex3f(xi - 13 - 40 * i, yi - 20, zi + 1);
-				glVertex3f(xi - 13 - 40 * i, yi - 10, zi + 1);
+				glVertex3f(xi - rec40 * i, yi, zi);
+				glVertex3f(xi + (rec15 - 2) - rec40 * i, yi - 4, zi - 1);
+				glVertex3f(xi + (rec15 - 2) - rec40 * i, yi - 10, zi - 1);
+				glVertex3f(xi - rec40 * i, yi - 14, zi);
+				glVertex3f(xi - (rec15 - 2) - rec40 * i, yi - 10, zi + 1);
+				glVertex3f(xi - (rec15 - 2) - rec40 * i, yi - 4, zi + 1);
 			glEnd();
 		}
 	}
@@ -216,12 +221,12 @@ void sphere(void) {
 	//Next lines will draw the textured sphere
 	glPushMatrix();
 
-	glRotatef(anglez, 0.0, 0.0, 1.0);
-	glRotatef(angley, pos_x, pos_y, pos_z);
-	glRotatef(anglex, 1.0, 1, 0);
+	glRotatef(anglez, 0.0, 0.0, pos_z);
+	glRotatef(angley, 0, pos_y, 0);
+	glRotatef(anglex, pos_x, 0, 0);
 
 	glTranslatef(pos_x, pos_y, pos_z);
-	gluSphere(texture, 60, 36, 72);
+	gluSphere(texture, sphereRadius, 36, 72);
 	glTranslatef(pos_x, pos_y, pos_z);
 	glPopMatrix();
 
@@ -243,20 +248,60 @@ void print(int x, int y, int z, const char *string)
 	}
 };
 
+void vortex() {
+	glPushMatrix();
+	glTranslatef(pos_x, pos_y, pos_z);
+	//glScalef(0.5, 0.5, 0.5);
+	gluCylinder(texture, 20, 7, 7, 36, 72);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0, 0, -0.55);
+	glScalef(0.5, 0.5, 0.5);
+	gluCylinder(texture, 0.7, 0.3, 0.5, 36, 72);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0, 0, -0.30);
+	glScalef(0.5, 0.5, 0.5);
+	gluCylinder(texture, 0.3, 0.28, 0.5, 36, 72);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0, 0, -0.05);
+	glScalef(0.5, 0.5, 0.5);
+	gluCylinder(texture, 0.28, 0.3, 0.5, 36, 72);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0, 0, 0.20);
+	glScalef(0.5, 0.5, 0.5);
+	gluCylinder(texture, 0.3, 0.7, 0.5, 36, 72);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0, 0, 0.45);
+	glScalef(0.5, 0.5, 0.5);
+	gluCylinder(texture, 0.7, 2, 0.7, 36, 72);
+	glPopMatrix();
+
+	glDisable(GL_TEXTURE_2D);
+}
+
 //Main drawing method.
 void draw(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	GLfloat xi = 250, zi = 0;
+	GLfloat xi = 200, zi = 0;
 	int m = 1;
 
 	/*--------------------Drawing background pattern manually-----------------------------*/
-	for (GLfloat yi = -100; yi <= 700; yi = yi + 30) {
+	for (GLfloat yi = -100; yi <= 700; yi = yi + 15) {
 		if (m == 1)
 			hexagonLine(xi, yi, zi);
 		else
-			hexagonLine(xi+20, yi, zi);
+			hexagonLine(xi+18, yi, zi);
 
 		m = m * -1;
 	}
@@ -294,15 +339,15 @@ void draw(void)
 	/*---------------------Generate label with menu-------------------------*/
 	glColor3f(0, 0, 0);
 	glBegin(GL_POLYGON);
-		glVertex3f(40, -40, 12);
-		glVertex3f(195, -40, 12);
-		glVertex3f(195, -70, 12);
-		glVertex3f(40, -70, 12);
+		glVertex3f(0, -54, 12);
+		glVertex3f(195, -54, 12);
+		glVertex3f(195, -90, 12);
+		glVertex3f(0, -90, 12);
 	glEnd();
 	glColor3f(1, 1, 1);
-	print(45, -80, 10, "Usa las flechas para mover la esfera.");
-	print(45, -90, 10, "F1-F2 para girar la esfera.");
-	print(45, -100, 10, "F3-F4-F5-F6 para modificar iluminacion.");
+	print(4, -60, 10, "Usa las flechas para mover la esfera.");
+	print(4, -68, 10, "F1-F2 para girar la esfera.");
+	print(4, -76, 10, "F3-F4-F5-F6 para modificar iluminacion.");
 	/*----------------------------------------------------------------------*/
 
 

@@ -233,7 +233,6 @@ void sphere(void) {
 	glDisable(GL_TEXTURE_2D);
 
 	/*---------------------------------------------------------------------*/
-
 }
 
 //Displaying menu options as text.
@@ -249,41 +248,49 @@ void print(int x, int y, int z, const char *string)
 };
 
 void vortex() {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, sphereTexture);
+
+	//glMatrixMode(GL_MODELVIEW);
+
+	glColor3f(1.0,1.0,1.0);
 	glPushMatrix();
 	glTranslatef(pos_x, pos_y, pos_z);
 	//glScalef(0.5, 0.5, 0.5);
 	gluCylinder(texture, 20, 7, 7, 36, 72);
 	glPopMatrix();
 
-	glPushMatrix();
-	glTranslatef(0, 0, -0.55);
-	glScalef(0.5, 0.5, 0.5);
-	gluCylinder(texture, 0.7, 0.3, 0.5, 36, 72);
-	glPopMatrix();
+	//glPushMatrix();
+	//glTranslatef(0, 0, -0.55);
+	//glScalef(0.5, 0.5, 0.5);
+	//gluCylinder(texture, 0.7, 0.3, 0.5, 36, 72);
+	//glPopMatrix();
 
-	glPushMatrix();
-	glTranslatef(0, 0, -0.30);
-	glScalef(0.5, 0.5, 0.5);
-	gluCylinder(texture, 0.3, 0.28, 0.5, 36, 72);
-	glPopMatrix();
+	//glPushMatrix();
+	//glTranslatef(0, 0, -0.30);
+	//glScalef(0.5, 0.5, 0.5);
+	//gluCylinder(texture, 0.3, 0.28, 0.5, 36, 72);
+	//glPopMatrix();
 
-	glPushMatrix();
-	glTranslatef(0, 0, -0.05);
-	glScalef(0.5, 0.5, 0.5);
-	gluCylinder(texture, 0.28, 0.3, 0.5, 36, 72);
-	glPopMatrix();
+	//glPushMatrix();
+	//glTranslatef(0, 0, -0.05);
+	//glScalef(0.5, 0.5, 0.5);
+	//gluCylinder(texture, 0.28, 0.3, 0.5, 36, 72);
+	//glPopMatrix();
 
-	glPushMatrix();
-	glTranslatef(0, 0, 0.20);
-	glScalef(0.5, 0.5, 0.5);
-	gluCylinder(texture, 0.3, 0.7, 0.5, 36, 72);
-	glPopMatrix();
+	//glPushMatrix();
+	//glTranslatef(0, 0, 0.20);
+	//glScalef(0.5, 0.5, 0.5);
+	//gluCylinder(texture, 0.3, 0.7, 0.5, 36, 72);
+	//glPopMatrix();
 
-	glPushMatrix();
-	glTranslatef(0, 0, 0.45);
-	glScalef(0.5, 0.5, 0.5);
-	gluCylinder(texture, 0.7, 2, 0.7, 36, 72);
-	glPopMatrix();
+	//glPushMatrix();
+	//glTranslatef(0, 0, 0.45);
+	//glScalef(0.5, 0.5, 0.5);
+	//gluCylinder(texture, 0.7, 2, 0.7, 36, 72);
+	//glPopMatrix();
 
 	glDisable(GL_TEXTURE_2D);
 }

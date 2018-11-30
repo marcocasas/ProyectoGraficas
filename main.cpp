@@ -1,19 +1,27 @@
+#define _USE_MATH_DEFINES
+
+#include <windows.h>
 #include <iostream>
 #include <stdlib.h>
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#include <GLUT/glut.h>
-//#include <GL/glew.h>
-#define _USE_MATH_DEFINES
+//#include <OpenGL/gl.h>
+//#include <OpenGL/glu.h>
+#include "GL/glew.h"
+#include "GL/glut.h"
 #include <math.h>
 #include <vector>
 #include <array>
-//#include <windows.h>
+
 using namespace std;
 
-GLfloat pos_x = 0.5, pos_z = 0.5, pos_y = 0.5; //Position in x, y and z-axis of the sphere.
-GLfloat anglex = 1;
-GLfloat angley = -1;
+float sweepResolution = 520;
+float xmin = -5;
+float xmax = 5;
+float ymin = -10;
+float ymax = 40;
+
+GLfloat pos_x = 0.5, pos_y = 0.5, pos_z = 0.5; //Position in x, y and z-axis of the sphere.
+GLfloat anglex = 0;
+GLfloat angley = 0;
 GLfloat anglez = 0;
 
 GLint winWidth = 600, winHeight = 600; // Initial display-window size.
@@ -23,7 +31,6 @@ GLuint sphereTexture; //Used for binding a texture to the sphere.
 
 
 //Function for loading the bitmap of the image to create the texture.
-/*
 int LoadBitmap(const char *filename)
 {
     FILE * file;
@@ -105,8 +112,6 @@ int LoadBitmap(const char *filename)
     
     return (num_texture); // Returns the current texture OpenGL ID
 }
-*/
-
 
 void init (void){
     /*-----------------FOR THE LIGHTING--------------------------*/
@@ -128,17 +133,16 @@ void init (void){
     
     glClearColor(.741, .624, .239, 0.0); //Set backgroud color to "gold"
     
+	glMatrixMode(GL_MODELVIEW);
+	gluLookAt(x0, y0, z0, xref, yref, zref, Vx, Vy, Vz);
+
     //Working with a frustrum visualization volume.
     glMatrixMode (GL_PROJECTION);
     glFrustum (-1.0, 1.0, -1.0, 1.0, 2.0, 20.0);
     
-    
-    glMatrixMode (GL_MODELVIEW);
-    gluLookAt(x0, y0, z0, xref, yref, zref, Vx, Vy, Vz);
-    
     texture = gluNewQuadric(); //Used for the sphere.
-    //gluQuadricTexture(texture, GL_TRUE); //Used for the sphere.
-    //sphereTexture = LoadBitmap("images/pattern_sphere.bmp"); //Used for the sphere.
+    gluQuadricTexture(texture, GL_TRUE); //Used for the sphere.
+    sphereTexture = LoadBitmap("images/pattern_sphere2.bmp"); //Used for the sphere.
 }
 
 float get_distance(float r){
@@ -193,7 +197,7 @@ void hexagon_line (float xi, float yc,float r, float w, float inc){
 }
 
 void sphere(){
-    glColor3f(0.01, 0.3, 0.4);
+	glColor3f(1, 1, 1);
     
     /*------------------Binding texture to the sphere---------------*/
     glEnable(GL_TEXTURE_2D);
@@ -203,23 +207,20 @@ void sphere(){
     //Next lines will draw the textured sphere
     glPushMatrix();
     
-    glRotatef(anglez, 0.0, 0.0, 1.0);
-    glRotatef(angley, pos_x, pos_y, pos_z);
-    glRotatef(anglex, 1.0, 1, 0);
-    
-    glTranslatef(pos_x, pos_y, pos_z);
+    //glRotatef(anglez, 0.0, 0.0, 1.0);
+    //glRotatef(angley, pos_x, pos_y, pos_z);
+    //glRotatef(anglex, 1.0, 1, 0);
+    //
+    glTranslatef(pos_x, pos_y, pos_z); 
+	glRotatef(anglex, 1, 0, 0);
+	glRotatef(angley, 0, 1, 0);
+	glRotatef(anglez, 0, 0, 1);
     gluSphere(texture, 0.5, 36, 72);
-    glTranslatef(pos_x, pos_y, pos_z);
+
     glPopMatrix();
     
     glDisable(GL_TEXTURE_2D);
 }
-
-float sweepResolution = 520;
-float xmin = -5;
-float xmax = 5;
-float ymin = -10;
-float ymax = 40;
 
 float f(float y){
     return 0.15*pow(y,2) + 0.7;
@@ -291,7 +292,7 @@ void build_strip(vector<vector<array<float, 3>>> v){
 }
 
 //Displaying menu options as text.
-void print(int x, int y, int z, const char *string)
+void print(float x, float y, float z, const char *string)
 {
     glRasterPos2f(x, y); //Set position of text.
     int len = (int)strlen(string);
@@ -316,13 +317,8 @@ void draw(void){
     }
     /*------------------------------------------------------------------------------------------------------*/
     
-    sphere(); // Drawing sphere
-    
-    
     //vector<vector<array<float, 3>>> v = vertex(sweepResolution, sweepResolution);
     //build_strip(v);
-
-    
     
     /*-----------------------Lighting----------------------------------------------*/
     glTranslatef(0.0f, 0.0f, -8.0f);
@@ -355,8 +351,10 @@ void draw(void){
     glTranslatef(0.0f, 0.0f, 8.0f);
     /*---------------------------------------------------------------------------*/
     
+	sphere(); // Drawing sphere
+
     /*---------------------Generate label with menu-------------------------*/
-    glColor3f(1, 1, 1);
+    glColor3f(0, 0, 0);
     glBegin(GL_POLYGON);
     glVertex3f(2.95, -2.95, 0);
     glVertex3f(-0.1, -2.95, 0);
@@ -365,9 +363,9 @@ void draw(void){
     glEnd();
     
     glColor3f(1, 1, 1);
-    print(-0.95, -1.8, 10, "Usa las flechas para mover la esfera.");
-    print(-0.95,-2.5, 100, "F1-F2 para mover la esfera de atras para adelante.");
-    //print(-0.4, -2.6, 0, "F3-F4-F5-F6 para modificar iluminacion.");
+    print(-0, -1.8, 2, "Usa las flechas para mover la esfera.");
+    print(-0,-2.2, 2, "F1-F2 para mover la esfera de atras para adelante.");
+    print(-0, -2.6, 2, "F3-F4-F5-F6 para modificar iluminacion.");
     /*----------------------------------------------------------------------*/
 
     
@@ -390,19 +388,19 @@ void reshapeFcn (GLint newWidth, GLint newHeight)
 void specialkeys(int key, int x, int y) {
     switch (key) {
         case GLUT_KEY_UP:
-            pos_y = pos_y + .5;
+            pos_y = pos_y + .2;
             cout << y << endl;
             break;
         case GLUT_KEY_DOWN:
-            pos_y = pos_y - .5;
+            pos_y = pos_y - .2;
             cout << y << endl;
             break;
         case GLUT_KEY_RIGHT:
-            pos_x = pos_x + .5;
+            pos_x = pos_x + .2;
             cout << x << endl;
             break;
         case GLUT_KEY_LEFT:
-            pos_x = pos_x - .5;
+            pos_x = pos_x - .2;
             cout << x << endl;
             break;
         case GLUT_KEY_F1:
@@ -434,7 +432,6 @@ void specialkeys(int key, int x, int y) {
     }
     glutPostRedisplay();
 }
-
 
 int main (int argc, char** argv){
     glutInit (&argc, argv);

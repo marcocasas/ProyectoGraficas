@@ -3,12 +3,12 @@
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #include <GLUT/glut.h>
-#include <GL/glew.h>
+//#include <GL/glew.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <vector>
 #include <array>
-
+//#include <windows.h>
 using namespace std;
 
 GLfloat pos_x = 0.5, pos_z = 0.5, pos_y = 0.5; //Position in x, y and z-axis of the sphere.
@@ -319,8 +319,8 @@ void draw(void){
     sphere(); // Drawing sphere
     
     
-    vector<vector<array<float, 3>>> v = vertex(sweepResolution, sweepResolution);
-    build_strip(v);
+    //vector<vector<array<float, 3>>> v = vertex(sweepResolution, sweepResolution);
+    //build_strip(v);
 
     
     
@@ -328,7 +328,7 @@ void draw(void){
     glTranslatef(0.0f, 0.0f, -8.0f);
     
     //Add ambient light
-    GLfloat ambientColor[] = { 0.6, 0.6, 0.6, 0.5 }; //Color (0.2, 0.2, 0.2)
+    GLfloat ambientColor[] = { 0.6, 0.6, 0.6, 1.0 }; //Color (0.2, 0.2, 0.2)
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
     //glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
     
@@ -337,14 +337,18 @@ void draw(void){
     GLfloat specularLightColor0[] = { 0.7f, 0.7f, 0.7f, 0.7f };
     
     GLfloat lightPos0[] = { 1.0f, 10.0f, 5.0f, 1.0f };
+    GLfloat lightPos2[] = { -3.0f, 8.0f, 5.0f, 1.0f };
     
     glLightfv(GL_LIGHT0, GL_SPECULAR, specularLightColor0);
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos0);
     
+    glLightfv(GL_LIGHT0, GL_SPECULAR, specularLightColor0);
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPos2);
+    
     //Add directed light
     GLfloat lightColor1[] = { 0.9f, 0.9f, 0.9f, 1.0f }; //Color (0.5, 0.2, 0.2)
     //Coming from the direction (-1, 0.5, 0.5)
-    GLfloat lightPos1[] = { -1.0f, 0.5f, -0.2f, 0.0f };
+    GLfloat lightPos1[] = { 1.0f, 1.0f, -0.5f, 0.0f };
     glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuseLightColor0);
     glLightfv(GL_LIGHT1, GL_POSITION, lightPos1);
     
@@ -355,14 +359,14 @@ void draw(void){
     glColor3f(1, 1, 1);
     glBegin(GL_POLYGON);
     glVertex3f(2.95, -2.95, 0);
-    glVertex3f(-0.5, -2.95, 0);
-    glVertex3f(-0.5, -1.5, 0);
+    glVertex3f(-0.1, -2.95, 0);
+    glVertex3f(-0.1, -1.5, 0);
     glVertex3f(2.95, -1.5, 0);
     glEnd();
     
     glColor3f(1, 1, 1);
-    //print(-0.4, -2.0, 0, "Usa las flechas para mover la esfera.");
-    print(-0.98,-2.5, 0, "F1-F2 para mover la esfera de atras para adelante.");
+    print(-0.95, -1.8, 10, "Usa las flechas para mover la esfera.");
+    print(-0.95,-2.5, 100, "F1-F2 para mover la esfera de atras para adelante.");
     //print(-0.4, -2.6, 0, "F3-F4-F5-F6 para modificar iluminacion.");
     /*----------------------------------------------------------------------*/
 
@@ -448,3 +452,4 @@ int main (int argc, char** argv){
     
     glutMainLoop ( );
 }
+

@@ -248,18 +248,18 @@ void print(int x, int y, int z, const char *string)
 };
 
 void vortex() {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, sphereTexture);
 
 	//glMatrixMode(GL_MODELVIEW);
 
-	glColor3f(1.0,1.0,1.0);
+	glColor3f(1.0, 1.0, 1.0);
 	glPushMatrix();
 	glTranslatef(pos_x, pos_y, pos_z);
+	glRotatef(-40, 0.0, 1.0, 1.0);
 	//glScalef(0.5, 0.5, 0.5);
-	gluCylinder(texture, 20, 7, 7, 36, 72);
+	gluCylinder(texture, 50, 25, 25, 36, 72);
+	//glRotatef(70, 1.0, 0.0, 0.0);
 	glPopMatrix();
 
 	//glPushMatrix();
@@ -357,6 +357,7 @@ void draw(void)
 	print(4, -76, 10, "F3-F4-F5-F6 para modificar iluminacion.");
 	/*----------------------------------------------------------------------*/
 
+	vortex();
 
 	glFlush();
 	glutPostRedisplay();

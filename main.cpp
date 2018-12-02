@@ -1,12 +1,13 @@
 #define _USE_MATH_DEFINES
 
 #include <windows.h>
+#include <stdio.h>
 #include <iostream>
-#include <stdlib.h>
 //#include <OpenGL/gl.h>
 //#include <OpenGL/glu.h>
 #include "GL/glew.h"
 #include "GL/glut.h"
+#include <time.h> 
 #include <math.h>
 #include <vector>
 #include <array>
@@ -19,6 +20,12 @@ float xmax = 5;
 float ymin = -10;
 float ymax = 40;
 
+float x_n;
+float y_n;
+float zn = 0;
+
+int r = 1;
+
 GLfloat pos_x = 0.5, pos_y = 0.5, pos_z = 5; //Position in x, y and z-axis of the sphere.
 GLfloat anglex = 0;
 GLfloat angley = 0;
@@ -26,6 +33,7 @@ GLfloat anglez = 0;
 GLfloat angleVx = -90;
 GLfloat angleVy = 0;
 GLfloat angleVz = 0;
+GLfloat transpSphere = 1.0;
 
 GLint winWidth = 600, winHeight = 600; // Initial display-window size.
 
@@ -33,6 +41,7 @@ GLUquadric *texture; //Used for binding a texture to the sphere.
 GLuint sphereTexture; //Used for binding a texture to the sphere.
 GLuint vortexTexture; //Used for binding a texture to the sphere.
 
+boolean appear = false; //For allowing appearance of a new object.
 
 //Function for loading the bitmap of the image to create the texture.
 int LoadBitmap(const char *filename)
@@ -267,7 +276,7 @@ void print(float x, float y, float z, const char *string)
 	}
 }
 
-
+//Main drawing function.
 void draw(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear display window.
 
@@ -282,13 +291,29 @@ void draw(void) {
 	}
 	/*------------------------------------------------------------------------------------------------------*/
 
-	vortex();
+	/*--------------------Draw random sphere-------------------------------------*/
+
+	if (appear) {
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
+		glColor4f(.5, .2, .3, transpSphere);
+		glPushMatrix();
+		glTranslatef(x_n, y_n, zn);
+		//glScalef(0.5, 0.5, 0.5);
+		glutSolidSphere(1.2, 20, 20);
+		glPopMatrix();
+		glDisable(GL_BLEND);
+	}
+	glColor4f(1, 1, 1, 1.0);
+	/*---------------------------------------------------------------------------*/
+
+	vortex(); //Drawing vortex in the middle of the scene.
 
 	/*-----------------------Lighting----------------------------------------------*/
 	glTranslatef(0.0f, 0.0f, -8.0f);
 
 	//Add ambient light
-	GLfloat ambientColor[] = { 0.6, 0.6, 0.6, 1.0 }; //Color (0.2, 0.2, 0.2)
+	GLfloat ambientColor[] = { 0.6, 0.6, 0.6, 1.0 };
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
 	//glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 
@@ -319,17 +344,20 @@ void draw(void) {
 
 	/*---------------------Generate label with menu-------------------------*/
 	glColor3f(0, 0, 0);
-	//	glBegin(GL_POLYGON);
-	//	glVertex3f(2.95, -2.95, 0);
-	//	glVertex3f(-0.1, -2.95, 0);
-	//	glVertex3f(-0.1, -1.5, 0);
-	//	glVertex3f(2.95, -1.5, 0);
-	//	glEnd();
+		glBegin(GL_POLYGON);
+			glVertex3f(5, -5, 0);
+			glVertex3f(-5, -5, 0);
+			glVertex3f(-5, -3.0, 0);
+			glVertex3f(5, -3.0, 0);	
+		glEnd();
 
-	//	glColor3f(1, 1, 1);
-	//	print(-0, -1.8, 2, "Usa las flechas para mover la esfera.");
-	//	print(-0, -2.2, 2, "F1-F2 para mover la esfera de atras para adelante.");
-	//	print(-0, -2.6, 2, "F3-F4-F5-F6 para modificar iluminacion.");
+		glColor3f(1, 1, 1);
+		print(-4.5, -3.4, 2, "Usa A-S-W-D para mover la esfera principal.");
+		print(-4.5, -3.6, 2, "Q-E para cambiar profundidad de la esfera principal.");
+		print(-4.5, -3.8, 2, "U-I-O-P para modificar iluminacion.");
+		print(-4.5, -4.0, 2, "Y para rotar la esfera.");
+		print(-4.5, -4.2, 2, "Z para aparecer una nueva esfera; C para dismunuir transparencia.");
+		print(-4.5, -4.4, 2, "X para desaparecer la nueva esfera; V para aumentar transparencia.");
 		/*----------------------------------------------------------------------*/
 
 
@@ -349,73 +377,106 @@ void reshapeFcn(GLint newWidth, GLint newHeight)
 }
 
 //Method to control the sphere using the keyboard.
-void specialkeys(int key, int x, int y) {
+void keyboard(unsigned char key, int x, int y)
+{
 	switch (key) {
-	case GLUT_KEY_UP:
+	case 27:
+		exit(0);
+		break;
+	case 'q':
+		pos_z = pos_z + .5;
+		break;
+	case 'w':
 		pos_y = pos_y + .2;
-		cout << y << endl;
 		break;
-	case GLUT_KEY_DOWN:
-		pos_y = pos_y - .2;
-		cout << y << endl;
-		break;
-	case GLUT_KEY_RIGHT:
-		pos_x = pos_x + .2;
-		cout << x << endl;
-		break;
-	case GLUT_KEY_LEFT:
-		pos_x = pos_x - .2;
-		cout << x << endl;
-		break;
-	case GLUT_KEY_F1:
-		pos_z += .5;
-		break;
-	case GLUT_KEY_F2:
-		pos_z = pos_z - .5;
-
-		cout << pos_z << endl;
-	case GLUT_KEY_F3:
-		glDisable(GL_LIGHT0);
-		break;
-	case GLUT_KEY_F4:
-		glEnable(GL_LIGHT0);
-		break;
-	case GLUT_KEY_F5:
-		glDisable(GL_LIGHT1);
-		break;
-	case GLUT_KEY_F6:
-		glEnable(GL_LIGHT1);
-		break;
-	case GLUT_KEY_F7:
+	case 'r':
 		anglex += 5;
 		angleVx -= 5;
-		cout << angleVx << endl;
 		break;
-	case GLUT_KEY_F8:
+	case 't':
 		angley += 5;
 		angleVy += 5;
 		break;
-	case GLUT_KEY_F9:
+	case 'y':
 		anglez += 5;
 		angleVz += 5;
+		break;
+	case 'e':
+		pos_z = pos_z - .5;
+		break;
+	case 'u':
+		glDisable(GL_LIGHT0);
+		break;
+	case 'i':
+		glEnable(GL_LIGHT0);
+		break;
+	case 'o':
+		glDisable(GL_LIGHT1);
+		break;
+	case 'p':
+		glEnable(GL_LIGHT1);
+		break;
+	case 'a':
+		pos_x = pos_x - .2;
+		break;
+	case 's':
+		pos_y = pos_y - .2;
+		break;
+	case 'd':
+		pos_x = pos_x + .2;
+		break;
+	case 'z':
+		appear = true;
+		break;
+	case 'x':
+		appear = false;
+		break;
+	case 'c':
+		transpSphere += 0.05;
+		break;
+	case 'v':
+		transpSphere -= 0.05;
+		break;
+	default:
 		break;
 	}
 	glutPostRedisplay();
 }
 
+//Function to detect if the secondary sphere is leaving the viewing window.
+int outOfBounds(float a) {
+	if (a > 3.8) {
+		r = -1;
+	}
+	if (a < -3.8) {
+		r = 1;
+	}
+
+	return r;
+}
+
+//Function to control the secondary sphere movement.
+void timer(int) {
+	glutPostRedisplay();
+	glutTimerFunc(1000 / 64, timer, 0);
+
+	x_n = x_n + outOfBounds(x_n) * 0.003;
+	y_n = y_n + outOfBounds(y_n) * 0.001;
+}
+
 int main(int argc, char** argv) {
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
-	glutInitWindowPosition(100, 100);
+	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA | GLUT_DEPTH | GLUT_ALPHA);
+	glutInitWindowPosition(150, 150);
 	glutInitWindowSize(winWidth, winHeight);
 	glutCreateWindow("Proyecto final");
+	glutTimerFunc(0, timer, 0);
 
 	init();
 
 	glutDisplayFunc(draw);
 	glutReshapeFunc(reshapeFcn);
-	glutSpecialFunc(specialkeys); //Keyboard callback function to control the sphere.
-
+	glutKeyboardFunc(keyboard); //Keyboard callback function to control the sphere.
 
 	glutMainLoop();
 }

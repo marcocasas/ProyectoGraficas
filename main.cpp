@@ -14,32 +14,25 @@
 
 using namespace std;
 
-float sweepResolution = 520;
-float xmin = -5;
-float xmax = 5;
-float ymin = -10;
-float ymax = 40;
-
 float x_n;
 float y_n;
-float zn = 0;
+float zn = -4;
 
 int r = 1;
+int numTexture = 0;
 
 GLfloat pos_x = 0.5, pos_y = 0.5, pos_z = 5; //Position in x, y and z-axis of the sphere.
 GLfloat anglex = 0;
 GLfloat angley = 0;
 GLfloat anglez = 0;
-GLfloat angleVx = -90;
-GLfloat angleVy = 0;
-GLfloat angleVz = 0;
 GLfloat transpSphere = 1.0;
 
-GLint winWidth = 600, winHeight = 600; // Initial display-window size.
+GLint winWidth = 600, winHeight = 750; // Initial display-window size.
 
 GLUquadric *texture; //Used for binding a texture to the sphere.
-GLuint sphereTexture; //Used for binding a texture to the sphere.
-GLuint vortexTexture; //Used for binding a texture to the sphere.
+GLuint sphereTexture[3]; //Used for binding a texture to the sphere.
+GLuint vortexTexture; //Used for binding a texture to the sphere
+GLuint vortexTexture2; //Used for binding a texture to the sphere.
 
 boolean appear = false; //For allowing appearance of a new object.
 
@@ -146,7 +139,7 @@ void init(void) {
 	GLfloat xwMin = -100.0, ywMin = -80.0, xwMax = 100.0, ywMax = 80.0;
 
 	//Set positions for near and far clipping planes
-	GLfloat dnear = 25.0, dfar = 250.0;
+	GLfloat dnear = 25.0, dfar = 30.0;
 
 	glClearColor(.741, .624, .239, 0.0); //Set backgroud color to "gold"
 
@@ -160,8 +153,11 @@ void init(void) {
 	texture = gluNewQuadric(); //Used for the sphere.
 	gluQuadricTexture(texture, GL_TRUE); //Used for the sphere.
 	gluQuadricNormals(texture, GLU_SMOOTH);
-	sphereTexture = LoadBitmap("images/pattern_sphere.bmp"); //Used for the sphere.
-	vortexTexture = LoadBitmap("images/pattern_vortex2.bmp"); //Used for the sphere.
+	sphereTexture[0] = LoadBitmap("images/pattern_sphere.bmp"); //Used for the sphere.
+	sphereTexture[1] = LoadBitmap("images/pattern_sphere2.bmp");
+	sphereTexture[2] = LoadBitmap("images/pattern_sphere3.bmp");
+	vortexTexture = LoadBitmap("images/pattern_vortex2.bmp");
+	vortexTexture2 = LoadBitmap("images/pattern_vortex.bmp");
 }
 
 float get_distance(float r) {
@@ -190,7 +186,7 @@ void draw_edge(float xc, float yc, float w, float z, float r) {
 
 void draw_hexagon(float xc, float yc, float z, float r, float w) {
 	float d = get_distance(r);
-	draw_edge(xc, yc, w, z, r);
+	draw_edge(xc, yc, w, z - 0.1, r);
 
 	// Set fill color to "purple".
 	glColor3ub(72, 27, 109);
@@ -211,30 +207,24 @@ void hexagon_line(float xi, float yc, float r, float w, float inc) {
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	for (float xc = xi; xc <= -2 * xi; xc += inc) {
-		draw_hexagon(xc, yc, -10, r, w);
+		draw_hexagon(xc, yc, -9.8, r, w);
 	}
 }
 
 void sphere() {
 	glColor3f(1, 1, 1);
-
+	int i = numTexture % 3;
 	/*------------------Binding texture to the sphere---------------*/
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, sphereTexture);
-
-
+	glBindTexture(GL_TEXTURE_2D, sphereTexture[i]);
+	glMatrixMode(GL_MODELVIEW); // applies transformation only to the sphere
 	//Next lines will draw the textured sphere
 	glPushMatrix();
-	//glRotatef(anglez, 0.0, 0.0, 1.0);
-	//glRotatef(angley, pos_x, pos_y, pos_z);
-	//glRotatef(anglex, 1.0, 1, 0);
-	//
 	glTranslatef(pos_x, pos_y, pos_z);
-	glRotatef(anglex, 1, 0, 0);
+	glRotatef(-90, 1, 0, 0);
 	glRotatef(angley, 0, 1, 0);
 	glRotatef(anglez, 0, 0, 1);
 	gluSphere(texture, 0.8, 36, 72);
-
 	glPopMatrix();
 
 	glDisable(GL_TEXTURE_2D);
@@ -242,29 +232,32 @@ void sphere() {
 
 void vortex() {
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, vortexTexture);
-
+	glBindTexture(GL_TEXTURE_2D, vortexTexture2);
 
 	glColor3f(1.0, 1.0, 1.0);
-	GLfloat angle = -5200 * M_PI / 180;
-	GLfloat angle2 = -5000 * M_PI / 180;
-	float h = 10;
+	float h = 5;
+	float b = 6;
 
+	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	glTranslatef(0, 0, -20);
-	glRotatef(-angle, 1.0f, 0.0f, 0.0f);
-	gluCylinder(texture, 10, 1, h, 36, 72);
+	glTranslatef(0, -5, 0);
+	glRotatef(-90, 1.0f, 0.0f, 0.0f);
+	gluCylinder(texture, b, 0.6, h, 36, 72);
 	glPopMatrix();
 
+	glDisable(GL_TEXTURE_2D);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, vortexTexture);
+
+	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	glTranslatef(0, 0, -20);
-	glRotatef(angle, 1.0f, 0.0f, 0.0f);
-	gluCylinder(texture, 10, 1, h, 36, 72);
+	glTranslatef(0, 5, 0);
+	glRotatef(90, 1.0f, 0.0f, 0.0f);
+	gluCylinder(texture, b, 0.6, h, 36, 72);
 	glPopMatrix();
 
 	glDisable(GL_TEXTURE_2D);
 }
-
 //Displaying menu options as text.
 void print(float x, float y, float z, const char *string)
 {
@@ -278,7 +271,11 @@ void print(float x, float y, float z, const char *string)
 
 //Main drawing function.
 void draw(void) {
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear display window.
+
+	glViewport(0, 150, winWidth, winHeight - 150);
 
 	/*---------------------------------------Drawing background---------------------------------------------*/
 	float r = 0.8, w = 0.1, x1 = -10, x2 = -9.0, inc = 2 * (r + w) + 0.08;
@@ -299,7 +296,6 @@ void draw(void) {
 		glColor4f(.5, .2, .3, transpSphere);
 		glPushMatrix();
 		glTranslatef(x_n, y_n, zn);
-		//glScalef(0.5, 0.5, 0.5);
 		glutSolidSphere(1.2, 20, 20);
 		glPopMatrix();
 		glDisable(GL_BLEND);
@@ -342,40 +338,38 @@ void draw(void) {
 
 	sphere(); // Drawing sphere
 
-	/*---------------------Generate label with menu-------------------------*/
+
+	/*---------------------Generate label with menu in 2nd viewport-------------------------*/
+	glViewport(0, 0, winWidth, 150);
+	glDisable(GL_DEPTH_TEST);
+
+	glColor3f(1, 1, 1);
+	glBegin(GL_POLYGON);
+	glVertex3f(-5, -5, 0);
+	glVertex3f(-5, 5, 0);
+	glVertex3f(5, 5, 0);
+	glVertex3f(5, -5, 0);
+	glEnd();
+
 	glColor3f(0, 0, 0);
-		glBegin(GL_POLYGON);
-			glVertex3f(5, -5, 0);
-			glVertex3f(-5, -5, 0);
-			glVertex3f(-5, -3.0, 0);
-			glVertex3f(5, -3.0, 0);	
-		glEnd();
-
-		glColor3f(1, 1, 1);
-		print(-4.5, -3.4, 2, "Usa A-S-W-D para mover la esfera principal.");
-		print(-4.5, -3.6, 2, "Q-E para cambiar profundidad de la esfera principal.");
-		print(-4.5, -3.8, 2, "U-I-O-P para modificar iluminacion.");
-		print(-4.5, -4.0, 2, "Y para rotar la esfera.");
-		print(-4.5, -4.2, 2, "Z para aparecer una nueva esfera; C para dismunuir transparencia.");
-		print(-4.5, -4.4, 2, "X para desaparecer la nueva esfera; V para aumentar transparencia.");
-		/*----------------------------------------------------------------------*/
-
+	print(-4.5, 3.4, 0, "Usa A-S-W-D para mover la esfera principal.");
+	print(-4.5, 2.2, 0, "Q-E para cambiar profundidad de la esfera principal.");
+	print(-4.5, 1, 0, "U-I-O-P para modificar iluminacion.");
+	print(-4.5, -0.2, 0, "Y para rotar la esfera.");
+	print(-4.5, -1.4, 0, "Z para aparecer una nueva esfera; C para dismunuir transparencia.");
+	print(-4.5, -2.6, 0, "X para desaparecer la nueva esfera; V para aumentar transparencia.");
+	print(-4.5, -3.8, 0, "B para cambiar el color de la esfera principal.");
+	/*----------------------------------------------------------------------*/
 
 	glFlush();
 	glutPostRedisplay();
-
 }
 
-void reshapeFcn(GLint newWidth, GLint newHeight)
-{
-	glViewport(0, 0, newWidth, newHeight);
+void reshapeFcn(GLint newWidth, GLint newHeight) {
 	winWidth = newWidth;
 	winHeight = newHeight;
-	glClear(GL_COLOR_BUFFER_BIT);
-
-
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
-
 //Method to control the sphere using the keyboard.
 void keyboard(unsigned char key, int x, int y)
 {
@@ -384,25 +378,23 @@ void keyboard(unsigned char key, int x, int y)
 		exit(0);
 		break;
 	case 'q':
-		pos_z = pos_z + .5;
+		//pos_z = (pos_z < 9) ? pos_z+0.5 : pos_z;
+		pos_z += 0.5;
 		break;
 	case 'w':
 		pos_y = pos_y + .2;
 		break;
 	case 'r':
 		anglex += 5;
-		angleVx -= 5;
 		break;
 	case 't':
 		angley += 5;
-		angleVy += 5;
 		break;
 	case 'y':
-		anglez += 5;
-		angleVz += 5;
+		anglez -= 5;
 		break;
 	case 'e':
-		pos_z = pos_z - .5;
+		pos_z -= 0.5;// (pos_z >= -9.5) ? pos_z - 0.5 : pos_z;
 		break;
 	case 'u':
 		glDisable(GL_LIGHT0);
@@ -436,6 +428,9 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case 'v':
 		transpSphere -= 0.05;
+		break;
+	case 'b':
+		numTexture += 1;
 		break;
 	default:
 		break;
@@ -475,7 +470,9 @@ int main(int argc, char** argv) {
 	init();
 
 	glutDisplayFunc(draw);
+	//glutDisplayFunc(test_sphere);
 	glutReshapeFunc(reshapeFcn);
+	//glutKeyboardFunc(keys);
 	glutKeyboardFunc(keyboard); //Keyboard callback function to control the sphere.
 
 	glutMainLoop();

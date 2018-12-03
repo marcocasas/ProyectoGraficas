@@ -378,8 +378,7 @@ void keyboard(unsigned char key, int x, int y)
 		exit(0);
 		break;
 	case 'q':
-		//pos_z = (pos_z < 9) ? pos_z+0.5 : pos_z;
-		pos_z += 0.5;
+		pos_z = (pos_z < 9) ? pos_z+0.5 : pos_z;
 		break;
 	case 'w':
 		pos_y = pos_y + .2;
@@ -394,7 +393,7 @@ void keyboard(unsigned char key, int x, int y)
 		anglez -= 5;
 		break;
 	case 'e':
-		pos_z -= 0.5;// (pos_z >= -9.5) ? pos_z - 0.5 : pos_z;
+		pos_z -=  (pos_z >= -9.5) ? pos_z - 0.5 : pos_z;
 		break;
 	case 'u':
 		glDisable(GL_LIGHT0);

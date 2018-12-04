@@ -3,8 +3,6 @@
 #include <windows.h>
 #include <stdio.h>
 #include <iostream>
-//#include <OpenGL/gl.h>
-//#include <OpenGL/glu.h>
 #include "GL/glew.h"
 #include "GL/glut.h"
 #include <time.h> 
@@ -258,6 +256,7 @@ void vortex() {
 
 	glDisable(GL_TEXTURE_2D);
 }
+
 //Displaying menu options as text.
 void print(float x, float y, float z, const char *string)
 {
@@ -355,7 +354,7 @@ void draw(void) {
 	print(-4.5, 3.4, 0, "Usa A-S-W-D para mover la esfera principal.");
 	print(-4.5, 2.2, 0, "Q-E para cambiar profundidad de la esfera principal.");
 	print(-4.5, 1, 0, "U-I-O-P para modificar iluminacion.");
-	print(-4.5, -0.2, 0, "Y para rotar la esfera.");
+	print(-4.5, -0.2, 0, "Y-T para rotar la esfera; B para cambiar color.");
 	print(-4.5, -1.4, 0, "Z para aparecer una nueva esfera; C para dismunuir transparencia.");
 	print(-4.5, -2.6, 0, "X para desaparecer la nueva esfera; V para aumentar transparencia.");
 	print(-4.5, -3.8, 0, "B para cambiar el color de la esfera principal.");
@@ -378,7 +377,7 @@ void keyboard(unsigned char key, int x, int y)
 		exit(0);
 		break;
 	case 'q':
-		pos_z = (pos_z < 9) ? pos_z+0.5 : pos_z;
+		pos_z = (pos_z < 7) ? pos_z+0.5 : pos_z;
 		break;
 	case 'w':
 		pos_y = pos_y + .2;
@@ -393,7 +392,7 @@ void keyboard(unsigned char key, int x, int y)
 		anglez -= 5;
 		break;
 	case 'e':
-		pos_z -=  (pos_z >= -9.5) ? pos_z - 0.5 : pos_z;
+		pos_z =  (pos_z >= -9.5) ? pos_z - 0.5 : pos_z;
 		break;
 	case 'u':
 		glDisable(GL_LIGHT0);
@@ -469,9 +468,7 @@ int main(int argc, char** argv) {
 	init();
 
 	glutDisplayFunc(draw);
-	//glutDisplayFunc(test_sphere);
 	glutReshapeFunc(reshapeFcn);
-	//glutKeyboardFunc(keys);
 	glutKeyboardFunc(keyboard); //Keyboard callback function to control the sphere.
 
 	glutMainLoop();
